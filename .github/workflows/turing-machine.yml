@@ -64,8 +64,8 @@ jobs:
           # If we are about to fall off the grid,
           # then add another cell to ensure that we do not
           if [[ $LOCATION == "-1" ]] ; then
-            $LOCATION="0"
-            $TAPE="0$TAPE"
+            LOCATION="0"
+            TAPE="0$TAPE"
           fi
 
           # Replace the character under the read-write head with the output
