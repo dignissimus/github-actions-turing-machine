@@ -76,5 +76,6 @@ jobs:
 
         git config --local user.email "action@github.com"
         git config --local user.name "Turing Machine (GitHub action)"
+        git add .
         git commit -m "Move read-write head to the $DIRECTION_TEXT. Transition to state $NEW_STATE"
         git push "https://${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master --follow-tags
