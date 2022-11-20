@@ -61,19 +61,30 @@ jobs:
           # the configuration
           NEW_STATE=$(echo $CONFIGURATION | cut -d "." -f 3)
 
+          # If we are about to fall off the grid,
+          # then add another cell to ensure that we do not
+          if [[ $LOCATION == "-1" ]] ; then
+            $LOCATION="0"
+            $TAPE="0$TAPE"
+          fi
+
           # Replace the character under the read-write head with the output
           # from the state
           NEW_TAPE=$(echo $TAPE | sed -e "s/\(.\)\{$((LOCATION))\}.\(.*\)/\1$OUTPUT\2/")
 
           # Remove trailing zeros
-          NEW_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
+          FORMATTED_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
+
+          # Remove leading zeros
+          FORMATTED_TAPE=$(echo $FORMATTED_TAPE | sed -e "s/^0\+//")
+
 
           # Set the new location according to configuration
           if [[ $DIRECTION == "L" ]]; then NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
           if [[ $DIRECTION == "R" ]]; then NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
 
           # If we're isntructed to halt, then halt
-          if [[ $NEW_STATE == "H" ]]; then echo -n halt > status; echo $NEW_TAPE > output; fi
+          if [[ $NEW_STATE == "H" ]]; then echo -n halt > status; echo $FORMATTED_TAPE > output; fi
 
           printf "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
