@@ -13,9 +13,9 @@ jobs:
       run: |
         ls # Debug
         # If we're stopped then do nothing
-        if [[ $(< status) == "halt" ]]; then; exit 0; fi
+        if [[ $(< status) == "halt" ]]; then exit 0; fi
         # If we're starting, then reset the state
-        if [[ $(< status) == "start" ]]; then;
+        if [[ $(< status) == "start" ]]; then
           echo -n > output
           echo running > status;
           echo -n "0\n0\n0" > state;
@@ -66,11 +66,11 @@ jobs:
         NEW_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
 
         # Set the new location according to configuration
-        if [[ $DIRECTION == "L" ]]; then; NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
-        if [[ $DIRECTION == "R" ]]; then; NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
+        if [[ $DIRECTION == "L" ]]; then NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
+        if [[ $DIRECTION == "R" ]]; then NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
 
         # If we're isntructed to halt, then halt
-        if [[ $NEW_STATE == "H" ]]; then; echo halt > status; echo $NEW_TAPE > output; fi
+        if [[ $NEW_STATE == "H" ]]; then echo halt > status; echo $NEW_TAPE > output; fi
 
         echo -n "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
