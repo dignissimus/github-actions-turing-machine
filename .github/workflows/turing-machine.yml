@@ -12,10 +12,10 @@ jobs:
     run: |
       ls # Debug
       # If we're stopped then do nothing
-      if [[ $(< status) == "halt"]]; then; exit 0; fi
+      if [[ $(< status) == "halt" ]]; then; exit 0; fi
       # If we're starting, then reset the state
-      if [[ $(< status) == "start"]]; then;
-        rm output;
+      if [[ $(< status) == "start" ]]; then;
+        echo -n > output
         echo running > status;
         echo -n "0\n0\n0" > state;
         echo -n > output
@@ -25,6 +25,8 @@ jobs:
 
       # Read the tape from the first line
       TAPE=$(sed "1q;d" state)
+      TAPE="${TAPE}0"
+
       # Read the location of the read-write head from the second line
       LOCATION=$(sed "2q;d" state)
       # Read the label for the current state from the third line
@@ -37,7 +39,7 @@ jobs:
       STATE_INDEX=$(($STATE + 1))
 
       # Read the state definition from the machine file
-      DEFINTIION=$(sed "${STATE_INDEX}q;d" machine)
+      DEFINITION=$(sed "${STATE_INDEX}q;d" machine)
 
       # On character 0, return the first configuration
       # On character 1, return the second configuration
@@ -63,11 +65,11 @@ jobs:
       NEW_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
 
       # Set the new location according to configuration
-      if [[ $LOCATION == "L" ]]; then; NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
-      if [[ $LOCATION == "R" ]]; then; NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
+      if [[ $DIRECTION == "L" ]]; then; NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
+      if [[ $DIRECTION == "R" ]]; then; NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
 
       # If we're isntructed to halt, then halt
-      if [[ $NEW_STATE == "H" ]]; then; echo halt > status; echo $NEW_TAPE > output;
+      if [[ $NEW_STATE == "H" ]]; then; echo halt > status; echo $NEW_TAPE > output; fi
 
       echo -n "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
