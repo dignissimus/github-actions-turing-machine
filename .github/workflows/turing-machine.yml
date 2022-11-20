@@ -4,77 +4,78 @@ on: [push]
 jobs:
   perform-step:
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v3
     - name: commit
-    env:
-      GH_PAT: ${{ secrets.GH_PAT }}
-    run: |
-      ls # Debug
-      # If we're stopped then do nothing
-      if [[ $(< status) == "halt" ]]; then; exit 0; fi
-      # If we're starting, then reset the state
-      if [[ $(< status) == "start" ]]; then;
-        echo -n > output
-        echo running > status;
-        echo -n "0\n0\n0" > state;
-        echo -n > output
-      fi
-      # Set the status as running
-      echo running > status
+      env:
+       GH_PAT: ${{ secrets.GH_PAT }}
+      run: |
+        ls # Debug
+        # If we're stopped then do nothing
+        if [[ $(< status) == "halt" ]]; then; exit 0; fi
+        # If we're starting, then reset the state
+        if [[ $(< status) == "start" ]]; then;
+          echo -n > output
+          echo running > status;
+          echo -n "0\n0\n0" > state;
+          echo -n > output
+        fi
+        # Set the status as running
+        echo running > status
 
-      # Read the tape from the first line
-      TAPE=$(sed "1q;d" state)
-      TAPE="${TAPE}0"
+        # Read the tape from the first line
+        TAPE=$(sed "1q;d" state)
+        TAPE="${TAPE}0"
 
-      # Read the location of the read-write head from the second line
-      LOCATION=$(sed "2q;d" state)
-      # Read the label for the current state from the third line
-      STATE=$(sed "3q;d" state)
+        # Read the location of the read-write head from the second line
+        LOCATION=$(sed "2q;d" state)
+        # Read the label for the current state from the third line
+        STATE=$(sed "3q;d" state)
 
-      CHARACTER=${TAPE:$LOCATION:1}
+        CHARACTER=${TAPE:$LOCATION:1}
 
-      # The state label is 0-indexed, so increment the counter by one
-      # to get the true index
-      STATE_INDEX=$(($STATE + 1))
+        # The state label is 0-indexed, so increment the counter by one
+        # to get the true index
+        STATE_INDEX=$(($STATE + 1))
 
-      # Read the state definition from the machine file
-      DEFINITION=$(sed "${STATE_INDEX}q;d" machine)
+        # Read the state definition from the machine file
+        DEFINITION=$(sed "${STATE_INDEX}q;d" machine)
 
-      # On character 0, return the first configuration
-      # On character 1, return the second configuration
-      CONFIGURATION_NUMBER=$(($CHARACTER + 1))
-      CONFIGURATION=$(echo $DEFINITION | cut -d "," -f $CONFIGURATION_NUMBER)
+        # On character 0, return the first configuration
+        # On character 1, return the second configuration
+        CONFIGURATION_NUMBER=$(($CHARACTER + 1))
+        CONFIGURATION=$(echo $DEFINITION | cut -d "," -f $CONFIGURATION_NUMBER)
 
-      # Read output from the first portion of the configuration
-      OUTPUT=$(echo $CONFIGURATION | cut -d "." -f 1)
-      
-      # Read the direction of motion of the read-write tape
-      # from the second portion of the configuration
-      DIRECTION=$(echo $CONFIGURATION | cut -d "." -f 2)
+        # Read output from the first portion of the configuration
+        OUTPUT=$(echo $CONFIGURATION | cut -d "." -f 1)
+        
+        # Read the direction of motion of the read-write tape
+        # from the second portion of the configuration
+        DIRECTION=$(echo $CONFIGURATION | cut -d "." -f 2)
 
-      # Read the label of the new state from the third portion of
-      # the configuration
-      NEW_STATE=$(echo $CONFIGURATION | cut -d "." -f 3)
+        # Read the label of the new state from the third portion of
+        # the configuration
+        NEW_STATE=$(echo $CONFIGURATION | cut -d "." -f 3)
 
-      # Replace the character under the read-write head with the output
-      # from the state
-      NEW_TAPE=$(echo $TAPE | sed -e "s/\(.\)\{$((LOCATION))\}.\(.*\)/\1$OUTPUT\2/")
+        # Replace the character under the read-write head with the output
+        # from the state
+        NEW_TAPE=$(echo $TAPE | sed -e "s/\(.\)\{$((LOCATION))\}.\(.*\)/\1$OUTPUT\2/")
 
-      # Remove trailing zeros
-      NEW_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
+        # Remove trailing zeros
+        NEW_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
 
-      # Set the new location according to configuration
-      if [[ $DIRECTION == "L" ]]; then; NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
-      if [[ $DIRECTION == "R" ]]; then; NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
+        # Set the new location according to configuration
+        if [[ $DIRECTION == "L" ]]; then; NEW_LOCATION=$((LOCATION -  1)) ; DIRECTION_TEXT="left" ; fi
+        if [[ $DIRECTION == "R" ]]; then; NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
 
-      # If we're isntructed to halt, then halt
-      if [[ $NEW_STATE == "H" ]]; then; echo halt > status; echo $NEW_TAPE > output; fi
+        # If we're isntructed to halt, then halt
+        if [[ $NEW_STATE == "H" ]]; then; echo halt > status; echo $NEW_TAPE > output; fi
 
-      echo -n "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
+        echo -n "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
-      git commit -m "Move read-write head to the $DIRECTION_TEXT. Transition to state $NEW_STATE"
-      git config --local user.email "action@github.com"
-      git config --local user.name "Turing Machine (GitHub action)"
+        git commit -m "Move read-write head to the $DIRECTION_TEXT. Transition to state $NEW_STATE"
+        git config --local user.email "action@github.com"
+        git config --local user.name "Turing Machine (GitHub action)"
 
-      git push "https://${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master --follow-tags
+        git push "https://${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git" HEAD:master --follow-tags
