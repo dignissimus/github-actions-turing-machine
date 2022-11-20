@@ -67,7 +67,7 @@ jobs:
 
           # Replace the character under the read-write head with the output
           # from the state
-          NEW_TAPE=$(echo $TAPE | sed -e "s/\(.\)\{$((LOCATION))\}.\(.*\)/\1$OUTPUT\2/")
+          NEW_TAPE=$(echo $TAPE | sed -e "s/\(.\{$((LOCATION))\}\}.\(.*\)/\1$OUTPUT\2/")
 
           # Remove trailing zeros
           FORMATTED_TAPE=$(echo $NEW_TAPE | sed -e "s/0\+$//")
