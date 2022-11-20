@@ -73,7 +73,7 @@ jobs:
           if [[ $DIRECTION == "R" ]]; then NEW_LOCATION=$((LOCATION +  1)) ; DIRECTION_TEXT="right" ; fi
 
           # If we're isntructed to halt, then halt
-          if [[ $NEW_STATE == "H" ]]; then echo halt > status; echo $NEW_TAPE > output; fi
+          if [[ $NEW_STATE == "H" ]]; then echo -n halt > status; echo $NEW_TAPE > output; fi
 
           printf "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
