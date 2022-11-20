@@ -1,5 +1,8 @@
 name: Turing Machine simulator
-on: [push]
+on:
+  push:
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   perform-step:
@@ -18,7 +21,7 @@ jobs:
         if [[ $(< status) == "start" ]]; then
           echo -n > output
           echo running > status;
-          echo -n "0\n0\n0" > state;
+          printf "0\n0\n0" > state;
           echo -n > output
         fi
         # Set the status as running
@@ -72,7 +75,7 @@ jobs:
         # If we're isntructed to halt, then halt
         if [[ $NEW_STATE == "H" ]]; then echo halt > status; echo $NEW_TAPE > output; fi
 
-        echo -n "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
+        printf "$NEW_TAPE\n$NEW_LOCATION\n$NEW_STATE" > state
 
         git config --local user.email "action@github.com"
         git config --local user.name "Turing Machine (GitHub action)"
