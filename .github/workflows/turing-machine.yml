@@ -1,8 +1,5 @@
 name: Turing Machine simulator
-on:
-  push:
-  schedule:
-    - cron: '*/5 * * * *'
+on: [push]
 
 jobs:
   perform-step:
